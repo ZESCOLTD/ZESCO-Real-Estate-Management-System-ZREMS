@@ -117,6 +117,14 @@
                                         <i class="far fa-dot-circle nav-icon"></i><p>Roles and Permissions</p>
                                     </a>
                                 </li>
+
+                                <li class="nav-item">
+                                    <a href="{{ route('configurations.lease_statuses.index') }}"
+                                    class="nav-link {{ request()->routeIs('configurations.lease_statuses.*') ? 'active' : '' }}">
+                                        <i class="far fa-dot-circle nav-icon"></i>
+                                        <p>Lease Statuses</p>
+                                    </a>
+                                </li>
                             @endcan
                             <li class="nav-item">
                                 <a href="{{ route('configurations.workflows.workflow_definitions.index') }}" class="nav-link {{ request()->routeIs('configurations.workflows.workflow_definitions.*') ? 'active' : '' }}">

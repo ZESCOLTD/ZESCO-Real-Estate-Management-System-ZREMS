@@ -229,6 +229,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/lease-agreements', App\Livewire\LeaseAgreements\Index::class)
     ->middleware('can:lease_agreements.view')
     ->name('lease_agreements.index');
+    
+    Route::get(
+    '/configurations/lease-statuses',
+    App\Livewire\Configurations\LeaseStatuses\Index::class
+)
+    ->middleware('can:configuration.manage')
+    ->name('configurations.lease_statuses.index');
+
 });
 
 Route::get('/getManNumbers', [UtilsController::class, 'getManNumbers'])->name('getManNumbers');
