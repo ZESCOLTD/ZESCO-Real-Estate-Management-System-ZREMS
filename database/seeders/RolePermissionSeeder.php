@@ -43,6 +43,7 @@ class RolePermissionSeeder extends Seeder
 
             // Assets
             'land_properties',
+            'lease_agreements',
             'asset_register',
             'wayleaves',
 
@@ -346,6 +347,8 @@ class RolePermissionSeeder extends Seeder
                 'asset_management.view',
 
                 'land_properties.view',
+
+                'lease_agreements.view',
 
                 'asset_register.view',
 

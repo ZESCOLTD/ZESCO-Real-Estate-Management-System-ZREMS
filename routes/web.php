@@ -226,7 +226,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/configurations/workflows/workflow-definitions/{id}/show', App\Livewire\Configurations\Workflows\WorkflowDefinition\Show::class)->name('configurations.workflows.workflow_definitions.show');
 
     Route::middleware(['auth'])->get('/support-center', AdminChatCenter::class)->name('support.center');
-
+    Route::get('/lease-agreements', App\Livewire\LeaseAgreements\Index::class)
+    ->middleware('can:lease_agreements.view')
+    ->name('lease_agreements.index');
 });
 
 Route::get('/getManNumbers', [UtilsController::class, 'getManNumbers'])->name('getManNumbers');
