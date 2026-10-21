@@ -99,127 +99,130 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', () => {
             let isVerified = false;
-            const mainBtn = $('#mainBtn');
-            const btnText = $('#btnText');
-            const btnIcon = $('#btnIcon');
-            const extraFields = $('#extra-fields');
+            const form = document.getElementById('registrationForm');
+            const mainBtn = document.getElementById('mainBtn');
+            const btnText = document.getElementById('btnText');
+            const btnLoader = document.getElementById('btnLoader');
+            const extraFields = document.getElementById('extra-fields');
+            const messageBox = document.getElementById('messageBox');
+            const manNoInput = document.getElementById('man_no');
+            const emailInput = document.getElementById('email');
+            const csrfToken = form.querySelector('input[name="_token"]')?.value ?? '';
+            const verifyUrl = @json(route('register.verify', [], false));
 
-            // Reset logic if man_no or email changes
-            $('#man_no, #email').on('input', function() {
-                if (isVerified) {
-                    isVerified = false;
-                    extraFields.slideUp();
-                    mainBtn.removeClass('btn-success').addClass('btn-primary');
-                    btnText.text('Verify Employee');
-                    btnIcon.removeClass('bi-check-circle').addClass('bi-search');
-                    $('#password, #confirm_password').val('');
-                    $('#passwordStrength').css('width','0%');
-                    $('#matchLabel').text('');
+            function showMessage(message, type = 'error') {
+                messageBox.textContent = message;
+                messageBox.className = 'text-center text-sm mb-2';
+                if (message) {
+                    messageBox.classList.add(type === 'success' ? 'text-green-700' : 'text-red-600');
                 }
-            });
-
-            mainBtn.click(function() {
-
-                if(isVerified){
-                    $('#registrationForm').submit();
-                    return;
-                }
-
-                let man_no = $('#man_no').val().trim();
-                let email = $('#email').val().trim();
-
-                if(!man_no || !email){
-                    showMessage('Please enter Man Number and Email.', 'danger');
-                    return;
-                }
-
-                // 🔹 Show loader
-                mainBtn.prop('disabled', true);
-                $('#btnContent').hide();
-                $('#btnLoader').show();
-                showMessage('', '');
-
-                $.ajax({
-                    url: "{{ route('register.verify') }}",
-                    method: 'POST',
-                    headers: {'X-CSRF-TOKEN':'{{ csrf_token() }}'},
-                    data: {man_no: man_no, email: email},
-
-                    success: function(res){
-                        if(res.success){
-
-                            $('#emp_name').val(res.user.name);
-                            $('#emp_directorate').val(res.user.directorate);
-                            $('#emp_job_title').val(res.user.job_title);
-
-                            extraFields.slideDown();
-
-                            mainBtn.removeClass('btn-primary').addClass('btn-success');
-                            $('#btnText').text('Submit Registration');
-
-                            showMessage('Employee verified successfully ✅', 'success');
-
-                            isVerified = true;
-
-                        } else {
-                            showMessage(res.message || 'Verification failed', 'danger');
-                        }
-                    },
-
-                    error:function(xhr){
-                        let msg = 'System error. Try again.';
-                        if(xhr.responseJSON && xhr.responseJSON.message){
-                            msg = xhr.responseJSON.message;
-                        }
-                        showMessage(msg, 'danger');
-                    },
-
-                    complete:function(){
-                        mainBtn.prop('disabled', false);
-                        $('#btnLoader').hide();
-                        $('#btnContent').show();
-                    }
-                });
-            });
-
-
-            // Password strength & match
-            $('#password, #confirm_password').on('input', function(){
-                let pwd = $('#password').val();
-                let conf = $('#confirm_password').val();
-                let score = 0;
-                if(pwd.length>=8) score+=20;
-                if(/[A-Z]/.test(pwd)) score+=20;
-                if(/[0-9]/.test(pwd)) score+=20;
-                if(/[^A-Za-z0-9]/.test(pwd)) score+=40;
-
-                $('#passwordStrength').css('width',score+'%')
-                    .toggleClass('bg-danger',score<50)
-                    .toggleClass('bg-success',score>=80);
-
-                if(conf!==""){
-                    if(pwd===conf) $('#matchLabel').text('Match ✅').css('color','green');
-                    else $('#matchLabel').text('No match ❌').css('color','red');
-                }
-            });
-        });
-
-        function showMessage(message, type){
-            const box = $('#messageBox');
-
-            if(!message){
-                box.html('');
-                return;
             }
 
-            let color = type === 'success' ? 'green' : 'red';
+            function resetVerification() {
+                if (isVerified) {
+                    isVerified = false;
+                    extraFields.style.display = 'none';
+                    btnText.textContent = 'Verify Employee';
+                    document.getElementById('password').value = '';
+                    document.getElementById('confirm_password').value = '';
+                    document.getElementById('passwordStrength').style.width = '0%';
+                    document.getElementById('matchLabel').textContent = '';
+                }
+            }
 
-            box.html(`<span style="color:${color}; font-weight:600;">${message}</span>`);
-        }
+            manNoInput.addEventListener('input', resetVerification);
+            emailInput.addEventListener('input', resetVerification);
+
+            form.addEventListener('submit', event => {
+                if (! isVerified) {
+                    event.preventDefault();
+                }
+            });
+
+            mainBtn.addEventListener('click', async () => {
+                if (isVerified) {
+                    form.requestSubmit();
+                    return;
+                }
+
+                const man_no = manNoInput.value.trim();
+                const email = emailInput.value.trim();
+
+                if (! man_no || ! email) {
+                    showMessage('Please enter Man Number and Work Email.');
+                    return;
+                }
+
+                mainBtn.disabled = true;
+                document.getElementById('btnContent').style.display = 'none';
+                btnLoader.style.display = 'inline-flex';
+                showMessage('');
+
+                try {
+                    const response = await fetch(verifyUrl, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body: JSON.stringify({man_no, email}),
+                    });
+
+                    const result = await response.json().catch(() => ({}));
+                    if (response.status === 419) {
+                        throw new Error('Your session expired. Reload this page and try again.');
+                    }
+                    if (! response.ok || ! result.success) {
+                        throw new Error(result.message || 'Employee verification failed. Try again.');
+                    }
+
+                    document.getElementById('emp_name').value = result.user.name ?? '';
+                    document.getElementById('emp_directorate').value = result.user.directorate ?? '';
+                    document.getElementById('emp_job_title').value = result.user.job_title ?? '';
+                    extraFields.style.display = 'flex';
+                    btnText.textContent = 'Create Account';
+                    showMessage('Employee verified successfully.', 'success');
+                    isVerified = true;
+                } catch (error) {
+                    showMessage(error.message || 'System error. Try again.');
+                } finally {
+                    mainBtn.disabled = false;
+                    btnLoader.style.display = 'none';
+                    document.getElementById('btnContent').style.display = 'inline-flex';
+                }
+            });
+
+            function updatePasswordFeedback() {
+                const pwd = document.getElementById('password').value;
+                const conf = document.getElementById('confirm_password').value;
+                let score = 0;
+                if (pwd.length >= 8) score += 20;
+                if (/[A-Z]/.test(pwd)) score += 20;
+                if (/[0-9]/.test(pwd)) score += 20;
+                if (/[^A-Za-z0-9]/.test(pwd)) score += 40;
+
+                const strength = document.getElementById('passwordStrength');
+                strength.style.width = score + '%';
+                strength.classList.toggle('bg-danger', score < 50);
+                strength.classList.toggle('bg-success', score >= 80);
+
+                const matchLabel = document.getElementById('matchLabel');
+                if (conf !== '') {
+                    matchLabel.textContent = pwd === conf ? 'Match' : 'No match';
+                    matchLabel.style.color = pwd === conf ? 'green' : 'red';
+                } else {
+                    matchLabel.textContent = '';
+                }
+            }
+
+            document.getElementById('password').addEventListener('input', updatePasswordFeedback);
+            document.getElementById('confirm_password').addEventListener('input', updatePasswordFeedback);
+        });
 
     </script>
 </x-layouts::auth>
