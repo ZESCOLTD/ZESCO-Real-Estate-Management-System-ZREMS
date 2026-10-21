@@ -87,14 +87,14 @@
             </div>
 
             <!-- Register Link -->
-{{--            @if (Route::has('register'))--}}
-{{--                <div class="text-center text-sm text-gray-600 pt-2">--}}
-{{--                    {{ __("Don't have an account?") }}--}}
-{{--                    <flux:link :href="route('register')" wire:navigate>--}}
-{{--                        {{ __('Register') }}--}}
-{{--                    </flux:link>--}}
-{{--                </div>--}}
-{{--            @endif--}}
+            @if (Route::has('register'))
+                <div class="text-center text-sm text-gray-600 pt-2">
+                    {{ __("Don't have an account?") }}
+                    <flux:link :href="route('register')" wire:navigate>
+                        {{ __('Register') }}
+                    </flux:link>
+                </div>
+            @endif
         </form>
     </div>
 </x-layouts::auth>
