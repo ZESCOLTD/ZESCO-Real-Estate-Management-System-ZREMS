@@ -20,6 +20,12 @@
         @if(session()->has('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
+        @if($errors->has('proposal') || $errors->has('workflow'))
+            <div class="alert alert-danger" role="alert">
+                @if($errors->has('proposal'))<div>{{ $errors->first('proposal') }}</div>@endif
+                @if($errors->has('workflow'))<div>{{ $errors->first('workflow') }}</div>@endif
+            </div>
+        @endif
 
         <div class="d-flex justify-content-between align-items-start flex-wrap mb-3">
             <div>
