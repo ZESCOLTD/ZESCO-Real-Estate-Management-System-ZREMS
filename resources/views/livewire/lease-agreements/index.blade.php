@@ -10,15 +10,23 @@
             </div>
 
             <div class="d-flex flex-wrap gap-2">
-                <button type="button" class="btn text-white bg-success mr-2" disabled>
-                    <i class="fas fa-file-excel mr-1"></i>
-                    Excel Import
-                </button>
+                @can('lease_agreements.manage')
+                    <a
+                        href="{{ route('lease_agreements.import') }}"
+                        class="btn text-white bg-success mr-2">
+                        <i class="fas fa-file-excel mr-1"></i>
+                        Excel Import
+                    </a>
+                @endcan
 
-                <button type="button" class="btn text-white bg-primary mr-2" disabled>
-                    <i class="fas fa-sync-alt mr-1"></i>
-                    Sync Lease Agreements
-                </button>
+                @can('lease_agreements.manage')
+                    <a
+                        href="{{ route('lease_agreements.import') }}#staged-batches"
+                        class="btn text-white bg-primary mr-2">
+                        <i class="fas fa-sync-alt mr-1"></i>
+                        Sync Lease Agreements
+                    </a>
+                @endcan
             
         </div>
 
@@ -96,10 +104,11 @@
 
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-sm table-hover mb-0">
-    <thead class="bg-primary text-white">
+            <table class="table table-hover mb-0">
+            <thead class="bg-primary text-white text-nowrap">
         <tr>
             <th>ID</th>
+            <th>Lease Number</th>
             <th style="min-width: 320px;">Contract Description</th>
             <th>Landlord</th>
             <th>Contact Phone</th>
@@ -121,6 +130,7 @@
         @forelse ($leases as $lease)
             <tr>
                 <td>{{ $lease->id }}</td>
+                <td>{{ $lease->lease_number ?? '—' }}</td>
                 <td>{{ $lease->contract_description }}</td>
                 <td>{{ $lease->landlord_name ?? '—' }}</td>
                 <td>{{ $lease->landlord_contact_phone ?? '—' }}</td>
@@ -146,7 +156,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="15" class="text-center text-muted py-4">
+                <td colspan="16" class="text-center text-muted py-4">
                     No lease agreements match your search or status filter.
                 </td>
             </tr>

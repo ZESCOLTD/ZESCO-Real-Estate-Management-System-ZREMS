@@ -22,6 +22,7 @@ class LeaseAgreement extends Model
         'lease_status_id',
         'comment',
         'responsible_officer_id',
+        'zesco_role',
     ];
 
     protected $casts = [
@@ -31,6 +32,28 @@ class LeaseAgreement extends Model
         'start_date' => 'date',
         'end_date' => 'date',
     ];
+
+    protected $attributes = [
+    'zesco_role' => 'tenant',
+];
+
+    protected static function booted(): void
+    {
+        static::created(function (self $lease): void {
+            if ($lease->lease_number !== null) {
+                return;
+            }
+
+            $prefix = match ($lease->zesco_role) {
+                'tenant' => 'ZT',
+                'landlord' => 'ZL',
+            };
+
+            $lease->forceFill([
+                'lease_number' => sprintf('%s-%06d', $prefix, $lease->id),
+            ])->saveQuietly();
+        });
+    }
 
     public function province(): BelongsTo
     {
