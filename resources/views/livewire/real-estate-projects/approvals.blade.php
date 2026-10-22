@@ -43,7 +43,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="card-body">{{ $projects->links() }}</div>
+            <div class="card-body">{{ $workflows->links() }}</div>
         </section>
     </div>
 </div>
