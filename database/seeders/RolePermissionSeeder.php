@@ -378,6 +378,7 @@ class RolePermissionSeeder extends Seeder
                 'real_estate_projects.approve',
                 'real_estate_projects.export',
                 'lease_agreements.view',
+                'lease_agreements.manage',
 
                 'asset_register.view',
                 'asset_register.create',
