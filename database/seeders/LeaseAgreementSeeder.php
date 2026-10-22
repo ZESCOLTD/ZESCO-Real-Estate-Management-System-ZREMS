@@ -15,8 +15,10 @@ class LeaseAgreementSeeder extends Seeder
 {
     public function run(): void
     {
-        // Fail clearly if the requested responsible officer does not exist.
-        $officerId = User::findOrFail(2)->id;
+        $officerId = User::query()->orderBy('id')->value('id');
+        if (! $officerId) {
+            throw new RuntimeException('Create at least one user before seeding sample lease agreements.');
+        }
 
         $statusIds = LeaseStatus::pluck('id', 'code');
 

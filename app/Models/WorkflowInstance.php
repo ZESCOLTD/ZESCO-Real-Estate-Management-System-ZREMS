@@ -50,6 +50,9 @@ class WorkflowInstance extends Model
         'current_step_id',
         'current_step_order',
         'status',
+        'approval_round',
+        'workflow_snapshot',
+        'current_approver_ids',
         'initiated_by',
         'initiated_at',
         'completed_by',
@@ -59,6 +62,8 @@ class WorkflowInstance extends Model
     protected $casts = [
         'initiated_at' => 'datetime',
         'completed_at' => 'datetime',
+        'workflow_snapshot' => 'array',
+        'current_approver_ids' => 'array',
     ];
 
     public function workflowDefinition()
@@ -75,6 +80,11 @@ class WorkflowInstance extends Model
     public function currentStep()
     {
         return $this->belongsTo(WorkflowStep::class, 'current_step_id');
+    }
+
+    public function initiator()
+    {
+        return $this->belongsTo(User::class, 'initiated_by');
     }
 
     public function actions()
