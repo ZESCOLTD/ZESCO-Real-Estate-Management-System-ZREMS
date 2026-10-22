@@ -45,6 +45,7 @@ class RolePermissionSeeder extends Seeder
             'land_properties',
             'asset_register',
             'wayleaves',
+            'real_estate_projects',
 
             // Approvals
             'acquisition_approvals',
@@ -262,6 +263,13 @@ class RolePermissionSeeder extends Seeder
 
             'Approving Officer',
 
+            'Senior Real Estate Officer',
+            'Principal Real Estate Officer',
+            'Manager Real Estate',
+            'Senior Manager Real Estate',
+            'Head Real Estate',
+            'Director Real Estate',
+
             'Services Officer',
 
             'Workflow Administrator',
@@ -282,6 +290,21 @@ class RolePermissionSeeder extends Seeder
             Role::firstOrCreate([
                 'name' => $role,
                 'guard_name' => 'web',
+            ]);
+        }
+
+        foreach ([
+            'Senior Real Estate Officer',
+            'Principal Real Estate Officer',
+            'Manager Real Estate',
+            'Senior Manager Real Estate',
+            'Head Real Estate',
+            'Director Real Estate',
+        ] as $roleName) {
+            Role::findByName($roleName)->syncPermissions([
+                'dashboard.view',
+                'real_estate_projects.view',
+                'real_estate_projects.approve',
             ]);
         }
 
@@ -347,7 +370,17 @@ class RolePermissionSeeder extends Seeder
 
                 'land_properties.view',
 
+                'real_estate_projects.view',
+                'real_estate_projects.create',
+                'real_estate_projects.update',
+                'real_estate_projects.submit',
+                'real_estate_projects.approve',
+                'real_estate_projects.export',
+
                 'asset_register.view',
+                'asset_register.create',
+                'asset_register.update',
+                'asset_register.export',
 
                 'wayleaves.view',
 
@@ -519,6 +552,12 @@ class RolePermissionSeeder extends Seeder
                 'land_properties.view',
                 'land_properties.create',
                 'land_properties.update',
+
+                'real_estate_projects.view',
+                'real_estate_projects.create',
+                'real_estate_projects.update',
+                'real_estate_projects.submit',
+                'real_estate_projects.export',
 
                 'asset_register.view',
                 'asset_register.create',

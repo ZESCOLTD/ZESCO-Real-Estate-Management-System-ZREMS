@@ -12,6 +12,8 @@ class AssetRegister extends Model
 
     protected $fillable = [
         'book_type_code',
+        'business_unit',
+        'cost_centre',
         'asset_number',
         'asset_id',
         'tag_number',
@@ -25,6 +27,14 @@ class AssetRegister extends Model
         'asset_cost',
         'original_asset_cost',
         'asset_location',
+        'area',
+        'sub_location',
+        'life_in_months',
+        'status',
+        'reportline',
+        'source_row',
+        'last_import_job_id',
+        'imported_at',
         'net_book_value',
         'deprn_reserve',
         'ytd_deprn',
@@ -39,11 +49,14 @@ class AssetRegister extends Model
 
     protected $casts = [
         'date_placed_in_service' => 'date',
+        'life_in_months' => 'integer',
         'asset_cost' => 'decimal:2',
         'original_asset_cost' => 'decimal:2',
         'net_book_value' => 'decimal:2',
         'deprn_reserve' => 'decimal:2',
         'ytd_deprn' => 'decimal:2',
+        'source_row' => 'array',
+        'imported_at' => 'datetime',
     ];
 
     public function consolidationSources(): HasMany

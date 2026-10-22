@@ -31,12 +31,65 @@
                     </li>
                 @endcan
 
-                @can('land_properties.view')
+                @canany(['land_properties.view', 'asset_register.view', 'tenant_register.view'])
                     <li class="nav-header text-uppercase" style="color: {{ config('theme.color_accent') }}">ASSETS</li>
-                    <li class="nav-item">
-                        <a href="{{ route('fms_assets_register.index') }}" class="nav-link {{ request()->routeIs('fms_assets_register.index') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-map-marked-alt"></i><p>Land &amp; Properties</p>
+                    @can('land_properties.view')
+                        <li class="nav-item">
+                            <a href="{{ route('fms_assets_register.index') }}" class="nav-link {{ request()->routeIs('fms_assets_register.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-map-marked-alt"></i><p>Land &amp; Properties</p>
+                            </a>
+                        </li>
+                    @endcan
+                    @can('asset_register.view')
+                        <li class="nav-item">
+                            <a href="{{ route('asset-register.index') }}" class="nav-link {{ request()->routeIs('asset-register.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-list-alt"></i><p>Asset Register</p>
+                            </a>
+                        </li>
+                    @endcan
+                    @can('tenant_register.view')
+                        <li class="nav-item">
+                            <a href="{{ route('tenant-register.index') }}" class="nav-link {{ request()->routeIs('tenant-register.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-users"></i><p>ZESCO Tenants Register</p>
+                            </a>
+                        </li>
+                    @endcan
+                @endcan
+
+                @can('real_estate_projects.view')
+                    @php $projectsOpen = request()->routeIs('real-estate-projects.*'); @endphp
+                    <li class="nav-item {{ $projectsOpen ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ $projectsOpen ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-building"></i>
+                            <p>Real Estate Projects <i class="right fas fa-angle-left"></i></p>
                         </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ route('real-estate-projects.dashboard') }}" class="nav-link {{ request()->routeIs('real-estate-projects.dashboard') ? 'active' : '' }}">
+                                    <i class="far fa-dot-circle nav-icon"></i><p>Project Dashboard</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('real-estate-projects.register') }}" class="nav-link {{ request()->routeIs('real-estate-projects.register') ? 'active' : '' }}">
+                                    <i class="far fa-dot-circle nav-icon"></i><p>Project Register</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('real-estate-projects.proposals') }}" class="nav-link {{ request()->routeIs('real-estate-projects.proposals*') ? 'active' : '' }}">
+                                    <i class="far fa-dot-circle nav-icon"></i><p>Project Proposals</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('real-estate-projects.approvals') }}" class="nav-link {{ request()->routeIs('real-estate-projects.approvals') ? 'active' : '' }}">
+                                    <i class="far fa-dot-circle nav-icon"></i><p>Project Approvals</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('real-estate-projects.reports') }}" class="nav-link {{ request()->routeIs('real-estate-projects.reports') ? 'active' : '' }}">
+                                    <i class="far fa-dot-circle nav-icon"></i><p>Project Reports</p>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 @endcan
 
@@ -94,7 +147,7 @@
                     </li>
                 @endauth
 
-                @canany(['configuration.view', 'configuration_workflow_definitions.view'])
+                @canany(['configuration.view', 'configuration.manage', 'configuration_workflow_definitions.view'])
                     <li class="nav-item {{ request()->routeIs('configurations.*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link {{ request()->routeIs('configurations.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-cogs"></i>
@@ -105,6 +158,11 @@
                                 <li class="nav-item">
                                     <a href="{{ route('configurations.roles.index') }}" class="nav-link {{ request()->routeIs('configurations.roles.*') ? 'active' : '' }}">
                                         <i class="far fa-dot-circle nav-icon"></i><p>Roles and Permissions</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('configurations.asset-register') }}" class="nav-link {{ request()->routeIs('configurations.asset-register') ? 'active' : '' }}">
+                                        <i class="far fa-dot-circle nav-icon"></i><p>Asset Register Configuration</p>
                                     </a>
                                 </li>
                             @endcan

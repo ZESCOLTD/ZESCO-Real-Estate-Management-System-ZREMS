@@ -6,6 +6,20 @@ use App\Livewire\Acquisitions\Spms\SpmsDocumentShow;
 use App\Livewire\Admin\EmailLogIndex;
 use App\Livewire\DashboardIndex;
 use App\Livewire\Imports\FmsAssetRegisterImport;
+use App\Livewire\AssetRegister\Index as InternalAssetRegisterIndex;
+use App\Livewire\AssetRegister\Import as InternalAssetRegisterImport;
+use App\Livewire\AssetRegister\Edit as InternalAssetRegisterEdit;
+use App\Livewire\AssetRegister\Configurations as InternalAssetRegisterConfigurations;
+use App\Livewire\TenantRegister\Index as TenantRegisterIndex;
+use App\Livewire\TenantRegister\Import as TenantRegisterImport;
+use App\Livewire\TenantRegister\Edit as TenantRegisterEdit;
+use App\Livewire\RealEstateProjects\Index as RealEstateProjectIndex;
+use App\Livewire\RealEstateProjects\ProposalForm as RealEstateProjectProposalForm;
+use App\Livewire\RealEstateProjects\Dashboard as RealEstateProjectDashboard;
+use App\Livewire\RealEstateProjects\Approvals as RealEstateProjectApprovals;
+use App\Livewire\RealEstateProjects\ExistingProjectForm as ExistingRealEstateProjectForm;
+use App\Livewire\RealEstateProjects\Reports as RealEstateProjectReports;
+use App\Livewire\RealEstateProjects\Workspace as RealEstateProjectWorkspace;
 use App\Livewire\Settings\NotificationPreferences;
 use App\Livewire\Support\AdminChatCenter;
 use App\Livewire\Users\UserCreate;
@@ -54,6 +68,36 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/notifications', App\Livewire\Notifications\Index::class)->name('notifications.index');
     Route::get('/settings/notifications', NotificationPreferences::class)->name('settings.notifications');
     Route::get('/admin/email-log', EmailLogIndex::class)->name('admin.email_log');
+
+    Route::get('/real-estate-projects/dashboard', RealEstateProjectDashboard::class)
+        ->middleware('can:real_estate_projects.view')
+        ->name('real-estate-projects.dashboard');
+    Route::get('/real-estate-projects/register', RealEstateProjectIndex::class)
+        ->middleware('can:real_estate_projects.view')
+        ->name('real-estate-projects.register');
+    Route::get('/real-estate-projects/approvals', RealEstateProjectApprovals::class)
+        ->middleware('can:real_estate_projects.view')
+        ->name('real-estate-projects.approvals');
+    Route::get('/real-estate-projects/reports', RealEstateProjectReports::class)
+        ->middleware('can:real_estate_projects.view')
+        ->name('real-estate-projects.reports');
+    Route::get('/real-estate-projects/proposals', RealEstateProjectIndex::class)
+        ->middleware('can:real_estate_projects.view')
+        ->name('real-estate-projects.proposals');
+    Route::get('/real-estate-projects/proposals/create', RealEstateProjectProposalForm::class)
+        ->middleware('can:real_estate_projects.create')
+        ->name('real-estate-projects.proposals.create');
+    Route::get('/real-estate-projects/register-existing', ExistingRealEstateProjectForm::class)
+        ->middleware('can:real_estate_projects.create')
+        ->name('real-estate-projects.existing.create');
+    Route::get('/real-estate-projects/{project}/proposal/edit', RealEstateProjectProposalForm::class)
+        ->whereNumber('project')
+        ->middleware('can:real_estate_projects.update')
+        ->name('real-estate-projects.proposal.edit');
+    Route::get('/real-estate-projects/{project}', RealEstateProjectWorkspace::class)
+        ->whereNumber('project')
+        ->middleware('can:real_estate_projects.view')
+        ->name('real-estate-projects.show');
 
 
     Route::get('/currency-list/search', function (Request $request) {
@@ -184,6 +228,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/spms/show', SpmsDocumentShow::class)->name('spms-document.show');
 
+    Route::get('/asset-register', InternalAssetRegisterIndex::class)
+        ->middleware('can:asset_register.view')
+        ->name('asset-register.index');
+    Route::get('/asset-register/import', InternalAssetRegisterImport::class)
+        ->middleware('can:asset_register.create')
+        ->name('asset-register.import');
+    Route::get('/asset-register/{asset}/edit', InternalAssetRegisterEdit::class)
+        ->whereNumber('asset')
+        ->middleware('can:asset_register.view')
+        ->name('asset-register.edit');
+    Route::get('/tenant-register', TenantRegisterIndex::class)
+        ->middleware('can:tenant_register.view')
+        ->name('tenant-register.index');
+    Route::get('/tenant-register/import', TenantRegisterImport::class)
+        ->middleware('can:tenant_register.create')
+        ->name('tenant-register.import');
+    Route::get('/tenant-register/{tenant}/edit', TenantRegisterEdit::class)
+        ->whereNumber('tenant')
+        ->middleware('can:tenant_register.view')
+        ->name('tenant-register.edit');
+    Route::get('/configurations/asset-register', InternalAssetRegisterConfigurations::class)
+        ->middleware('can:configuration.manage')
+        ->name('configurations.asset-register');
+
     Route::get('/fms-assets-register/index', App\Livewire\FmsAssetsRegister\Index::class)->name('fms_assets_register.index');
     Route::get('/fms-assets-register/{id}/show', App\Livewire\FmsAssetsRegister\Show::class)->name('fms_assets_register.show');
     Route::get('/fms-assets-register/{id}/edit', App\Livewire\FmsAssetsRegister\Edit::class)->name('fms_assets_register.edit');
@@ -213,7 +281,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         };
 
         return response()->stream($callback, 200, $headers);
-    });
+    })->name('imports.errors.download');
 
     Route::get('/configurations/roles/index', App\Livewire\Configurations\Roles\Index::class)->name('configurations.roles.index');
 
