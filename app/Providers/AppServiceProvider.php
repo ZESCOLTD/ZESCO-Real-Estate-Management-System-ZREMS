@@ -23,6 +23,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (! config('app.authorization_enabled')) {
+            \Illuminate\Support\Facades\Gate::before(fn ($user) => true);
+        }
+
         $this->configureDefaults();
 
         // Notification observers (opt-in via ServiceRequestServiceObserver::enable()).
