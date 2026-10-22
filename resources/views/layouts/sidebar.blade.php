@@ -93,15 +93,13 @@
                     </li>
                 @endcan
 
-                @can('lease_agreements.view')
-                    <li class="nav-item">
-                        <a href="{{ route('lease_agreements.index') }}"
-                        class="nav-link {{ request()->routeIs('lease_agreements.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-file-contract"></i>
-                            <p>Lease Agreement Register</p>
-                        </a>
-                    </li>
-                @endcan
+                <li class="nav-item">
+                    <a href="{{ route('lease_agreements.index') }}"
+                    class="nav-link {{ request()->routeIs('lease_agreements.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-file-contract"></i>
+                        <p>Lease Agreement Register</p>
+                    </a>
+                </li>
 
                 @canany(['users.view', 'workflow.view', 'configuration.view'])
                     <li class="nav-header text-uppercase" style="color: {{ config('theme.color_accent') }}">SETTINGS</li>

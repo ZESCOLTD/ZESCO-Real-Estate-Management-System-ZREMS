@@ -295,7 +295,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware(['auth'])->get('/support-center', AdminChatCenter::class)->name('support.center');
     Route::get('/lease-agreements', App\Livewire\LeaseAgreements\Index::class)
-    ->middleware('can:lease_agreements.view')
     ->name('lease_agreements.index');
     
     Route::get(
