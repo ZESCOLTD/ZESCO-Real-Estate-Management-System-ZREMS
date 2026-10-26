@@ -83,6 +83,120 @@
                     @endif
                 </div>
             </section>
+        @elseif($activeTab === 'feasibility')
+    <section class="card">
+        <div class="card-header">
+            <h5 class="mb-0">A. Project and Assessment Details</h5>
+        </div>
+
+        <div class="card-body">
+            <form wire:submit.prevent="saveFeasibilitySectionA">
+                <fieldset @disabled(! auth()->user()?->can('real_estate_projects.update'))>
+                    <div class="row">
+                        @foreach ([
+                            'project_title' => 'Project Title',
+                            'proposal_reference' => 'Project Proposal Reference',
+                            'property_site_name' => 'Property / Site Name',
+                            'building_structure_name' => 'Building / Structure Name (if applicable)',
+                            'town_location' => 'Town / Location',
+                        ] as $field => $label)
+                            <div class="col-md-6 form-group">
+                                <label for="feasibility-{{ $field }}">{{ $label }}</label>
+                                <input
+                                    id="feasibility-{{ $field }}"
+                                    type="text"
+                                    class="form-control"
+                                    wire:model="feasibilityForm.{{ $field }}">
+
+                                @error("feasibilityForm.{$field}")
+                                    <small class="text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
+                        @endforeach
+
+                        <div class="col-md-6 form-group">
+                            <label for="feasibility-assessment-date">Assessment Date</label>
+                            <input
+                                id="feasibility-assessment-date"
+                                type="date"
+                                class="form-control"
+                                wire:model="feasibilityForm.assessment_date">
+
+                            @error('feasibilityForm.assessment_date')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-6 form-group">
+                            <label for="feasibility-lead-department">
+                                Lead Assessing Department
+                            </label>
+                            <input
+                                id="feasibility-lead-department"
+                                type="text"
+                                class="form-control"
+                                wire:model="feasibilityForm.lead_assessing_department">
+
+                            @error('feasibilityForm.lead_assessing_department')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+
+                       <div class="col-md-6 form-group">
+    <label for="feasibility-prepared-by">
+        Assessment Prepared By
+    </label>
+
+    <select
+        id="feasibility-prepared-by"
+        class="form-control"
+        wire:model="feasibilityForm.prepared_by_user_id">
+        <option value="">Select a user</option>
+
+        @foreach ($assessmentPreparers as $preparer)
+            <option value="{{ $preparer->id }}">
+                {{ $preparer->name }}
+                @if ($preparer->man_no)
+                    ({{ $preparer->man_no }})
+                @endif
+            </option>
+        @endforeach
+    </select>
+
+    @error('feasibilityForm.prepared_by_user_id')
+        <small class="text-danger">{{ $message }}</small>
+    @enderror
+</div>
+
+                        <div class="col-12 form-group">
+                            <label for="feasibility-departments-consulted">
+                                Other Departments Consulted
+                            </label>
+                            <textarea
+                                id="feasibility-departments-consulted"
+                                class="form-control"
+                                rows="2"
+                                wire:model="feasibilityForm.other_departments_consulted"></textarea>
+
+                            @error('feasibilityForm.other_departments_consulted')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+                    </div>
+
+                    @can('real_estate_projects.update')
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                            wire:loading.attr="disabled"
+                            wire:target="saveFeasibilitySectionA">
+                            Save Section A
+                        </button>
+                    @endcan
+                </fieldset>
+            </form>
+        </div>
+    </section>
         @elseif($activeTab === 'approvals')
             <section class="card">
                 <div class="card-header"><h5 class="mb-0">Approvals and Decisions</h5></div>
