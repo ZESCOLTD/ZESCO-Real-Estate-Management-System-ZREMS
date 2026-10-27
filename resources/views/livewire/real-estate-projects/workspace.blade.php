@@ -740,6 +740,12 @@
         </form>
     </div>
 </section>
+        @elseif($activeTab === 'budget')
+            <livewire:real-estate-projects.budget :project="$project" :key="'project-budget-'.$project->id" />
+        @elseif($activeTab === 'risks')
+            <livewire:real-estate-projects.risks :project="$project" :key="'project-risks-'.$project->id" />
+        @elseif($activeTab === 'progress')
+            <livewire:real-estate-projects.progress :project="$project" :key="'project-progress-'.$project->id" />
         @elseif($activeTab === 'approvals')
             <section class="card">
                 <div class="card-header"><h5 class="mb-0">Approvals and Decisions</h5></div>
