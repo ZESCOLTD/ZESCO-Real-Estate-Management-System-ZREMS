@@ -1,12 +1,12 @@
 <div>
-    <x-slot name="title">Lease Agreement Register</x-slot>
-    <x-slot name="pageHeader">Lease Agreement Register</x-slot>
+    <x-slot name="title">ZESCO as Tenant Lease Register</x-slot>
+    <x-slot name="pageHeader">ZESCO as Tenant Lease Register</x-slot>
 
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <div>
-                <h5 class="mb-0 font-weight-bold">Lease Agreements</h5>
-                <small class="text-muted">Manage lease agreements</small>
+                <h5 class="mb-0 font-weight-bold">ZESCO as Tenant Lease Register</h5>
+                <small class="text-muted">Imported agreements where ZESCO is the tenant</small>
             </div>
 
             <div class="d-flex flex-wrap gap-2">
@@ -99,7 +99,7 @@
 {{-- LEASE REGISTER TABLE --}}
 <div class="card elevation-2 border-0 mb-4">
     <div class="card-header bg-white">
-        <h5 class="mb-0 font-weight-bold">Lease Agreements</h5>
+        <h5 class="mb-0 font-weight-bold">ZESCO as Tenant Lease Register</h5>
     </div>
 
     <div class="card-body p-0">

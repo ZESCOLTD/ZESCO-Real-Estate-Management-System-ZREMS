@@ -18,8 +18,10 @@ class DatabaseSeeder extends Seeder
 //            CurrencySeeder::class,
 
             RolePermissionSeeder::class,
+            LeaseTenantWorkflowPermissionSeeder::class,
             AssetRegisterPermissionSeeder::class,
             TenantRegisterPermissionSeeder::class,
+            TenantOnboardingWorkflowSeeder::class,
             SuperAdministratorSeeder::class,
             RealEstateProjectProposalWorkflowSeeder::class,
         ]);

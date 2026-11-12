@@ -13,6 +13,13 @@ use App\Livewire\AssetRegister\Configurations as InternalAssetRegisterConfigurat
 use App\Livewire\TenantRegister\Index as TenantRegisterIndex;
 use App\Livewire\TenantRegister\Import as TenantRegisterImport;
 use App\Livewire\TenantRegister\Edit as TenantRegisterEdit;
+use App\Livewire\TenantRegister\Onboarding as TenantRegisterOnboarding;
+use App\Livewire\TenantRegister\Applications as TenantRegisterApplications;
+use App\Livewire\TenantRegister\ApplicationShow as TenantRegisterApplicationShow;
+use App\Livewire\TenantRegister\Verification as TenantRegisterVerification;
+use App\Livewire\TenantRegister\Documents as TenantRegisterDocuments;
+use App\Livewire\TenantRegister\History as TenantRegisterHistory;
+use App\Livewire\TenantRegister\Dashboard as TenantRegisterDashboard;
 use App\Livewire\RealEstateProjects\Index as RealEstateProjectIndex;
 use App\Livewire\RealEstateProjects\ProposalForm as RealEstateProjectProposalForm;
 use App\Livewire\RealEstateProjects\Dashboard as RealEstateProjectDashboard;
@@ -20,6 +27,12 @@ use App\Livewire\RealEstateProjects\Approvals as RealEstateProjectApprovals;
 use App\Livewire\RealEstateProjects\ExistingProjectForm as ExistingRealEstateProjectForm;
 use App\Livewire\RealEstateProjects\Reports as RealEstateProjectReports;
 use App\Livewire\RealEstateProjects\Workspace as RealEstateProjectWorkspace;
+use App\Livewire\LeaseAgreements\TenantWorkflow as LeaseTenantWorkflowPage;
+use App\Livewire\LeaseAgreements\Dashboard as LeaseDashboard;
+use App\Livewire\LeaseAgreements\Lifecycle as LeaseLifecycle;
+use App\Livewire\LeaseAgreements\LandlordApplication as LandlordLeaseApplication;
+use App\Livewire\LeaseAgreements\LandlordRegister as LandlordLeaseRegister;
+use App\Livewire\LeaseAgreements\DocumentsHistory as LeaseDocumentsHistory;
 use App\Livewire\Settings\NotificationPreferences;
 use App\Livewire\Support\AdminChatCenter;
 use App\Livewire\Users\UserCreate;
@@ -30,10 +43,17 @@ use App\Livewire\Workflows\WorkflowApprovers;
 use App\Models\Currency;
 use App\Models\FmsAssetRegister;
 use App\Models\ImportError;
+use App\Models\TenantOnboardingApplication;
+use App\Models\TenantDocument;
+use App\Models\LeaseTenantWorkflow;
+use App\Models\LeaseLifecycleCase;
+use App\Models\LeaseLandlordApplication;
 use App\Models\OrganogramMappingView;
 use App\Models\ProjectAllView;
 use App\Models\VwBudgetCodesCombined;
+use App\Models\WorkflowInstance;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Http\Controllers\RegisteredUserController;
@@ -238,12 +258,70 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->whereNumber('asset')
         ->middleware('can:asset_register.view')
         ->name('asset-register.edit');
+    Route::get('/tenant-register/dashboard', TenantRegisterDashboard::class)
+        ->middleware('can:tenant_register.view')
+        ->name('tenant-register.dashboard');
     Route::get('/tenant-register', TenantRegisterIndex::class)
         ->middleware('can:tenant_register.view')
         ->name('tenant-register.index');
     Route::get('/tenant-register/import', TenantRegisterImport::class)
         ->middleware('can:tenant_register.create')
         ->name('tenant-register.import');
+    Route::get('/tenant-register/onboarding', TenantRegisterApplications::class)
+        ->middleware('can:tenant_register.view')
+        ->name('tenant-register.onboarding');
+    Route::get('/tenant-register/onboarding/create', TenantRegisterOnboarding::class)
+        ->middleware('can:tenant_register.create')
+        ->name('tenant-register.onboarding.create');
+    Route::get('/tenant-register/onboarding/{application}', TenantRegisterApplicationShow::class)
+        ->whereNumber('application')
+        ->middleware('can:tenant_register.view')
+        ->name('tenant-register.onboarding.show');
+    Route::get('/tenant-register/onboarding/{application}/edit', TenantRegisterOnboarding::class)
+        ->whereNumber('application')
+        ->name('tenant-register.onboarding.edit');
+    Route::get('/tenant-register/verification', TenantRegisterVerification::class)
+        ->middleware('can:tenant_register.verify')
+        ->name('tenant-register.verification');
+    Route::get('/tenant-register/documents', TenantRegisterDocuments::class)
+        ->middleware('can:tenant_register.documents.view')
+        ->name('tenant-register.documents');
+    Route::get('/tenant-register/history', TenantRegisterHistory::class)
+        ->middleware('can:tenant_register.history.view')
+        ->name('tenant-register.history');
+    Route::get('/tenant-register/documents/{document}/download', function (TenantDocument $document) {
+        abort_unless(Storage::disk('private')->exists($document->storage_path), 404);
+
+        return Storage::disk('private')->download($document->storage_path, $document->original_name);
+    })
+        ->whereNumber('document')
+        ->middleware('can:tenant_register.documents.view')
+        ->name('tenant-register.documents.download');
+    Route::get('/tenant-register/applications/{application}/documents/{document}', function (int $applicationId, int $documentId) {
+        $application = TenantOnboardingApplication::query()->findOrFail($applicationId);
+        abort_unless($application->status === 'Pending Verification', 404);
+
+        $document = TenantDocument::query()
+            ->where('documentable_type', $application->getMorphClass())
+            ->where('documentable_id', $application->id)
+            ->findOrFail($documentId);
+        $workflow = WorkflowInstance::query()
+            ->where('workflowable_type', $application->getMorphClass())
+            ->where('workflowable_id', $application->id)
+            ->where('status', 'In Progress')
+            ->latest('id')
+            ->firstOrFail();
+        $assignedIds = array_map('intval', $workflow->current_approver_ids ?? []);
+
+        abort_unless(in_array((int) auth()->id(), $assignedIds, true), 403);
+        abort_unless(Storage::disk('private')->exists($document->storage_path), 404);
+
+        return Storage::disk('private')->download($document->storage_path, $document->original_name);
+    })
+        ->whereNumber('application')
+        ->whereNumber('document')
+        ->middleware('can:tenant_register.verify')
+        ->name('tenant-register.verification.documents.download');
     Route::get('/tenant-register/{tenant}/edit', TenantRegisterEdit::class)
         ->whereNumber('tenant')
         ->middleware('can:tenant_register.view')
@@ -294,8 +372,98 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/configurations/workflows/workflow-definitions/{id}/show', App\Livewire\Configurations\Workflows\WorkflowDefinition\Show::class)->name('configurations.workflows.workflow_definitions.show');
 
     Route::middleware(['auth'])->get('/support-center', AdminChatCenter::class)->name('support.center');
+    Route::get('/lease-agreements/dashboard', LeaseDashboard::class)
+        ->middleware('can:lease_tenant_workflow.view')
+        ->name('lease_agreements.dashboard');
+    Route::get('/lease-agreements/renewals', LeaseLifecycle::class)
+        ->defaults('caseType', 'renewal')
+        ->middleware('can:lease_tenant_workflow.view')
+        ->name('lease_agreements.renewals');
+    Route::get('/lease-agreements/terminations', LeaseLifecycle::class)
+        ->defaults('caseType', 'termination')
+        ->middleware('can:lease_tenant_workflow.view')
+        ->name('lease_agreements.terminations');
+    Route::get('/lease-agreements/handovers', LeaseLifecycle::class)
+        ->defaults('caseType', 'handover')
+        ->middleware('can:lease_tenant_workflow.view')
+        ->name('lease_agreements.handovers');
+    Route::get('/lease-agreements/new', LeaseTenantWorkflowPage::class)
+        ->middleware('can:lease_tenant_workflow.view')
+        ->name('lease_agreements.new');
+    Route::get('/lease-agreements/new/landlord', LandlordLeaseApplication::class)
+        ->middleware('can:lease_tenant_workflow.view')
+        ->name('lease_agreements.new.landlord');
+    Route::get('/lease-agreements/documents-history', LeaseDocumentsHistory::class)
+        ->middleware('can:lease_tenant_workflow.view')
+        ->name('lease_agreements.documents_history');
+    Route::get('/lease-agreements/documents/{document}/download', function (TenantDocument $document) {
+        $owner = $document->documentable;
+        $isLeaseDocument = match (true) {
+            $owner instanceof \App\Models\LeaseAgreement => true,
+            $owner instanceof LeaseTenantWorkflow => $owner->leaseAgreement?->zesco_role === 'tenant',
+            $owner instanceof LeaseLifecycleCase => $owner->leaseAgreement?->zesco_role === 'tenant',
+            $owner instanceof LeaseLandlordApplication => true,
+            default => false,
+        };
+
+        abort_unless($isLeaseDocument, 404);
+        abort_unless(Storage::disk('private')->exists($document->storage_path), 404);
+
+        return Storage::disk('private')->download($document->storage_path, $document->original_name);
+    })
+        ->whereNumber('document')
+        ->middleware('can:lease_tenant_workflow.view')
+        ->name('lease_agreements.documents.download');
+    Route::get('/lease-agreements/workflows/{workflow}/documents/{document}/download', function (LeaseTenantWorkflow $workflow, TenantDocument $document) {
+        abort_unless($workflow->leaseAgreement?->zesco_role === 'tenant', 404);
+        abort_unless(
+            $document->documentable_type === $workflow->getMorphClass()
+                && (int) $document->documentable_id === (int) $workflow->id,
+            404
+        );
+        abort_unless(Storage::disk('private')->exists($document->storage_path), 404);
+
+        return Storage::disk('private')->download($document->storage_path, $document->original_name);
+    })
+        ->whereNumber('workflow')
+        ->whereNumber('document')
+        ->middleware('can:lease_tenant_workflow.view')
+        ->name('lease_agreements.tenant_workflows.documents.download');
+    Route::get('/lease-agreements/lifecycle/{lifecycleCase}/documents/{document}/download', function (LeaseLifecycleCase $lifecycleCase, TenantDocument $document) {
+        abort_unless($lifecycleCase->leaseAgreement?->zesco_role === 'tenant', 404);
+        abort_unless(
+            $document->documentable_type === $lifecycleCase->getMorphClass()
+                && (int) $document->documentable_id === (int) $lifecycleCase->id,
+            404
+        );
+        abort_unless(Storage::disk('private')->exists($document->storage_path), 404);
+
+        return Storage::disk('private')->download($document->storage_path, $document->original_name);
+    })
+        ->whereNumber('lifecycleCase')
+        ->whereNumber('document')
+        ->middleware('can:lease_tenant_workflow.view')
+        ->name('lease_agreements.lifecycle.documents.download');
+    Route::get('/lease-agreements/landlord-applications/{application}/documents/{document}/download', function (LeaseLandlordApplication $application, TenantDocument $document) {
+        abort_unless(
+            $document->documentable_type === $application->getMorphClass()
+                && (int) $document->documentable_id === (int) $application->id,
+            404
+        );
+        abort_unless(Storage::disk('private')->exists($document->storage_path), 404);
+
+        return Storage::disk('private')->download($document->storage_path, $document->original_name);
+    })
+        ->whereNumber('application')
+        ->whereNumber('document')
+        ->middleware('can:lease_tenant_workflow.view')
+        ->name('lease_agreements.landlord_applications.documents.download');
+    Route::get('/lease-agreements/landlord-register', LandlordLeaseRegister::class)
+        ->middleware('can:lease_agreements.view')
+        ->name('lease_agreements.landlord_register');
     Route::get('/lease-agreements', App\Livewire\LeaseAgreements\Index::class)
-    ->name('lease_agreements.index');
+        ->middleware('can:lease_agreements.view')
+        ->name('lease_agreements.index');
     
     Route::get(
     '/configurations/lease-statuses',

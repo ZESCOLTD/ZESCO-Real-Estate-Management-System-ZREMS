@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TenantRegister extends Model
@@ -49,5 +50,15 @@ class TenantRegister extends Model
         }
 
         return hash('sha256', implode('|', [$station, $category, $location, $serial, $address]));
+    }
+
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(TenantDocument::class, 'documentable');
+    }
+
+    public function historyEvents(): MorphMany
+    {
+        return $this->morphMany(TenantHistoryEvent::class, 'tenantable')->latest('occurred_at');
     }
 }

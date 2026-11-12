@@ -9,7 +9,10 @@
                 <small class="text-muted">Tenant and housing records across stations</small>
             </div>
             @can('tenant_register.create')
-                <a href="{{ route('tenant-register.import') }}" class="btn text-white bg-success"><i class="fas fa-file-excel mr-1"></i>Excel Import</a>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ route('tenant-register.onboarding') }}" class="btn btn-primary"><i class="fas fa-user-plus mr-1"></i>New Tenant Application</a>
+                    <a href="{{ route('tenant-register.import') }}" class="btn text-white bg-success"><i class="fas fa-file-excel mr-1"></i>Excel Import</a>
+                </div>
             @endcan
         </div>
 
@@ -28,7 +31,38 @@
                     <h4 class="mb-0 font-weight-bold">{{ number_format($vacantUnits) }}</h4>
                 </div></div>
             </div>
+            <div class="col-md-3 mb-2">
+                <div class="card border-0 elevation-2"><div class="card-body py-3">
+                    <small class="text-muted text-uppercase">Pending Verification</small>
+                    <h4 class="mb-0 font-weight-bold">{{ number_format($pendingApplicationsCount) }}</h4>
+                </div></div>
+            </div>
         </div>
+
+        <section class="card elevation-2 mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div><h6 class="mb-0 font-weight-bold">Tenant Applications Awaiting Verification</h6><small class="text-muted">Submitted applications; existing housing records remain unchanged.</small></div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>Application</th><th>Applicant</th><th>Type</th><th>Requested station / category</th><th>Submitted</th><th>Status</th></tr></thead>
+                    <tbody>
+                        @forelse($pendingApplications as $application)
+                            <tr>
+                                <td class="font-weight-bold">{{ $application->reference_no }}</td>
+                                <td>{{ $application->applicant_name }}</td>
+                                <td>{{ ucwords(str_replace('_', ' ', $application->tenant_type)) }}</td>
+                                <td>{{ $application->station_location }} / {{ $application->category }}</td>
+                                <td>{{ $application->submitted_at?->format('d M Y') }}</td>
+                                <td><span class="badge badge-warning">{{ $application->status }}</span></td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6" class="text-center text-muted py-4">No tenant applications are awaiting verification.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
         <section class="card elevation-2 mb-3">
             <div class="card-body">

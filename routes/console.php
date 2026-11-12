@@ -8,4 +8,8 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
+Schedule::command('leases:notify-expiring')
+    ->dailyAt(config('lease_notifications.daily_at', '08:00'))
+    ->withoutOverlapping();
+
 

@@ -3,15 +3,24 @@
 namespace App\Livewire\TenantRegister;
 
 use App\Models\TenantRegister as TenantRecord;
+use App\Services\TenantHistoryRecorder;
 use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class Edit extends Component
 {
+    use WithFileUploads;
+
     public TenantRecord $tenant;
     public array $form = [];
     public bool $canEdit = false;
+    public bool $canManageDocuments = false;
+    public bool $canViewHistory = false;
+    public $documentFile;
+    public string $documentType = 'Supporting document';
+    public string $documentExpiry = '';
 
     private const FIELDS = [
         'serial_no', 'station_location', 'category', 'current_tenant', 'man_no', 'employer',
@@ -27,6 +36,8 @@ class Edit extends Component
         $this->authorize('tenant_register.view');
         $this->tenant = $tenant;
         $this->canEdit = auth()->user()->can('tenant_register.update');
+        $this->canManageDocuments = auth()->user()->can('tenant_register.documents.manage');
+        $this->canViewHistory = auth()->user()->can('tenant_register.history.view');
         foreach (self::FIELDS as $field) {
             $this->form[$field] = $tenant->{$field} ?? '';
         }
@@ -69,15 +80,66 @@ class Edit extends Component
 
         $data['unit_key'] = TenantRecord::unitKeyFor($data);
         try {
-            $this->tenant->fill($data)->save();
+            $this->tenant->fill($data);
+            $changedFields = array_keys($this->tenant->getDirty());
+            $this->tenant->save();
         } catch (QueryException) {
             throw ValidationException::withMessages([
                 'form.physical_address' => 'Another tenant record already uses this station, category, location, and property reference.',
             ]);
         }
 
+        if ($changedFields !== []) {
+            app(TenantHistoryRecorder::class)->record(
+                $this->tenant,
+                'tenant_register_updated',
+                'Tenant register details were updated.',
+                ['changed_fields' => $changedFields]
+            );
+        }
+
         session()->flash('success', 'Tenant register record updated.');
         $this->tenant->refresh();
+    }
+
+    public function uploadDocument(): void
+    {
+        $this->authorize('tenant_register.documents.manage');
+        $validated = $this->validate([
+            'documentFile' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'documentType' => ['required', 'string', 'max:255'],
+            'documentExpiry' => ['nullable', 'date'],
+        ]);
+
+        $path = $validated['documentFile']->store('tenant-register-documents/' . $this->tenant->id, 'private');
+        if (! $path) {
+            $this->addError('documentFile', 'The document could not be stored.');
+
+            return;
+        }
+
+        $document = $this->tenant->documents()->create([
+            'document_type' => $validated['documentType'],
+            'original_name' => $validated['documentFile']->getClientOriginalName(),
+            'storage_path' => $path,
+            'mime_type' => $validated['documentFile']->getMimeType(),
+            'file_size' => $validated['documentFile']->getSize(),
+            'review_status' => 'Not Reviewed',
+            'expires_at' => $validated['documentExpiry'] ?: null,
+            'uploaded_by' => auth()->id(),
+            'uploaded_at' => now(),
+        ]);
+
+        app(TenantHistoryRecorder::class)->record(
+            $this->tenant,
+            'document_uploaded',
+            'A tenant document was uploaded.',
+            ['document_id' => $document->id, 'document_type' => $document->document_type]
+        );
+
+        $this->reset('documentFile', 'documentExpiry');
+        $this->documentType = 'Supporting document';
+        session()->flash('success', 'Tenant document uploaded.');
     }
 
     public function render()
@@ -85,6 +147,9 @@ class Edit extends Component
         $this->authorize('tenant_register.view');
 
         return view('livewire.tenant-register.edit')
+            ->with([
+                'documents' => $this->tenant->documents()->with(['uploader', 'reviewer'])->latest('uploaded_at')->get(),
+            ])
             ->layout('layouts.master', ['title' => $this->tenant->current_tenant ?: $this->tenant->physical_address]);
     }
 }

@@ -7,6 +7,9 @@
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
+    @if (session('email_test_sent'))
+        <div class="alert alert-info">{{ session('email_test_sent') }}</div>
+    @endif
 
     <form wire:submit.prevent="save">
         <div class="card mb-3">
@@ -44,6 +47,17 @@
                         </label>
                     </div>
                 @endforeach
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><strong>Email delivery test</strong></div>
+            <div class="card-body">
+                <p class="text-muted small">Send a test message only to your registered address ({{ auth()->user()->email ?? '—' }}). Configured mailer: <strong>{{ config('mail.default') }}</strong>.</p>
+                @error('email_test')<div class="text-danger small mb-2">{{ $message }}</div>@enderror
+                <button type="button" class="btn btn-outline-primary" wire:click="sendTestEmail" wire:loading.attr="disabled">
+                    <i class="fas fa-paper-plane mr-1"></i>Send test email
+                </button>
             </div>
         </div>
 

@@ -25,7 +25,7 @@ class UserEdit extends Component
         // Populate Standard Fields
         $this->name = $user->name;
         $this->email = $user->email;
-        $this->role_id = $user->role_id;
+        $this->role_id = $user->roles()->first()?->id;
         $this->mobile_no = $user->mobile_no;
         $this->man_no = $user->man_no;
 
@@ -44,7 +44,7 @@ class UserEdit extends Component
         $rules = [
             'name'      => 'required|string|max:255',
             'email'     => 'required|email|unique:users,email,' . $this->user->id,
-            'role_id'   => 'nullable',
+            'role_id'   => 'nullable|exists:roles,id',
             'mobile_no' => 'nullable|string',
             'man_no'    => 'nullable|string',
             // Validation for the organizational fields
@@ -63,7 +63,6 @@ class UserEdit extends Component
             'email'              => $this->email,
             'mobile_no'          => $this->mobile_no,
             'man_no'             => $this->man_no,
-            'role_id'            => $this->role_id,
             // 🔥 Include the organizational data in the update array
             'directorate'        => $this->directorate,
             'division'           => $this->division,
@@ -79,6 +78,9 @@ class UserEdit extends Component
         }
 
         $this->user->update($data);
+        if (filled($this->role_id)) {
+            $this->user->syncRoles([(int) $this->role_id]);
+        }
 
         session()->flash('success', 'User updated successfully.');
 

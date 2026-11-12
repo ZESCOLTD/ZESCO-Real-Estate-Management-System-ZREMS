@@ -22,38 +22,63 @@
                     </li>
                 @endcan
 
-                @can('spms_lookup.view')
-                    <li class="nav-header text-uppercase" style="color: {{ config('theme.color_accent') }}">ACQUISITION</li>
+                @can('asset_register.view')
+                    <li class="nav-header text-uppercase" style="color: {{ config('theme.color_accent') }}">ASSETS</li>
                     <li class="nav-item">
-                        <a href="{{ route('spms-document.show') }}" class="nav-link {{ request()->routeIs('spms-document.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-search"></i><p>SPMS Lookup</p>
+                        <a href="{{ route('asset-register.index') }}" class="nav-link {{ request()->routeIs('asset-register.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-list-alt"></i><p>Asset Register</p>
                         </a>
                     </li>
                 @endcan
 
-                @canany(['land_properties.view', 'asset_register.view', 'tenant_register.view'])
-                    <li class="nav-header text-uppercase" style="color: {{ config('theme.color_accent') }}">ASSETS</li>
-                    @can('land_properties.view')
-                        <li class="nav-item">
-                            <a href="{{ route('fms_assets_register.index') }}" class="nav-link {{ request()->routeIs('fms_assets_register.*') ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-map-marked-alt"></i><p>Land &amp; Properties</p>
-                            </a>
-                        </li>
-                    @endcan
-                    @can('asset_register.view')
-                        <li class="nav-item">
-                            <a href="{{ route('asset-register.index') }}" class="nav-link {{ request()->routeIs('asset-register.*') ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-list-alt"></i><p>Asset Register</p>
-                            </a>
-                        </li>
-                    @endcan
-                    @can('tenant_register.view')
-                        <li class="nav-item">
-                            <a href="{{ route('tenant-register.index') }}" class="nav-link {{ request()->routeIs('tenant-register.*') ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-users"></i><p>ZESCO Tenants Register</p>
-                            </a>
-                        </li>
-                    @endcan
+                @can('tenant_register.view')
+                    @php $tenantsOpen = request()->routeIs('tenant-register.*'); @endphp
+                    <li class="nav-item {{ $tenantsOpen ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ $tenantsOpen ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-users"></i>
+                            <p>Tenant Management <i class="right fas fa-angle-left"></i></p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ route('tenant-register.dashboard') }}" class="nav-link {{ request()->routeIs('tenant-register.dashboard') ? 'active' : '' }}">
+                                    <i class="far fa-dot-circle nav-icon"></i><p>Tenant Dashboard</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('tenant-register.index') }}" class="nav-link {{ request()->routeIs('tenant-register.index') ? 'active' : '' }}">
+                                    <i class="far fa-dot-circle nav-icon"></i><p>Tenant Register</p>
+                                </a>
+                            </li>
+                            @can('tenant_register.view')
+                                <li class="nav-item">
+                                    <a href="{{ route('tenant-register.onboarding') }}" class="nav-link {{ request()->routeIs('tenant-register.onboarding*') ? 'active' : '' }}">
+                                        <i class="far fa-dot-circle nav-icon"></i><p>Tenant Onboarding</p>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('tenant_register.verify')
+                                <li class="nav-item">
+                                    <a href="{{ route('tenant-register.verification') }}" class="nav-link {{ request()->routeIs('tenant-register.verification') ? 'active' : '' }}">
+                                        <i class="far fa-dot-circle nav-icon"></i><p>Tenant Verification</p>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('tenant_register.documents.view')
+                                <li class="nav-item">
+                                    <a href="{{ route('tenant-register.documents') }}" class="nav-link {{ request()->routeIs('tenant-register.documents*') ? 'active' : '' }}">
+                                        <i class="far fa-dot-circle nav-icon"></i><p>Tenant Documents</p>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('tenant_register.history.view')
+                                <li class="nav-item">
+                                    <a href="{{ route('tenant-register.history') }}" class="nav-link {{ request()->routeIs('tenant-register.history*') ? 'active' : '' }}">
+                                        <i class="far fa-dot-circle nav-icon"></i><p>Tenant History &amp; Status</p>
+                                    </a>
+                                </li>
+                            @endcan
+                        </ul>
+                    </li>
                 @endcan
 
                 @can('real_estate_projects.view')
@@ -93,12 +118,69 @@
                     </li>
                 @endcan
 
-                <li class="nav-item">
-                    <a href="{{ route('lease_agreements.index') }}"
-                    class="nav-link {{ request()->routeIs('lease_agreements.*') ? 'active' : '' }}">
+                @php $leasesOpen = request()->routeIs('lease_agreements.*'); @endphp
+                <li class="nav-item {{ $leasesOpen ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ $leasesOpen ? 'active' : '' }}">
                         <i class="nav-icon fas fa-file-contract"></i>
-                        <p>Lease Agreement Register</p>
+                        <p>Lease Management <i class="right fas fa-angle-left"></i></p>
                     </a>
+                    <ul class="nav nav-treeview">
+                        @can('lease_tenant_workflow.view')
+                            <li class="nav-item">
+                                <a href="{{ route('lease_agreements.dashboard') }}" class="nav-link {{ request()->routeIs('lease_agreements.dashboard') ? 'active' : '' }}">
+                                    <i class="far fa-dot-circle nav-icon"></i><p>Lease Dashboard</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('lease_agreements.index') }}" class="nav-link {{ request()->routeIs('lease_agreements.index') ? 'active' : '' }}">
+                                    <i class="far fa-dot-circle nav-icon"></i><p>ZESCO as Tenant Lease Register</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('lease_agreements.landlord_register') }}" class="nav-link {{ request()->routeIs('lease_agreements.landlord_register') ? 'active' : '' }}">
+                                    <i class="far fa-dot-circle nav-icon"></i><p>ZESCO as Landlord Lease Register</p>
+                                </a>
+                            </li>
+                            @php $newLeaseOpen = request()->routeIs('lease_agreements.new*'); @endphp
+                            <li class="nav-item {{ $newLeaseOpen ? 'menu-open' : '' }}">
+                                <a href="#" class="nav-link {{ $newLeaseOpen ? 'active' : '' }}">
+                                    <i class="far fa-dot-circle nav-icon"></i><p>New Lease <i class="right fas fa-angle-left"></i></p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ route('lease_agreements.new') }}" class="nav-link {{ request()->routeIs('lease_agreements.new') ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon"></i><p>ZESCO as Tenant</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{{ route('lease_agreements.new.landlord') }}" class="nav-link {{ request()->routeIs('lease_agreements.new.landlord') ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon"></i><p>ZESCO as Landlord</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('lease_agreements.renewals') }}" class="nav-link {{ request()->routeIs('lease_agreements.renewals') ? 'active' : '' }}">
+                                    <i class="far fa-dot-circle nav-icon"></i><p>Lease Renewals</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('lease_agreements.terminations') }}" class="nav-link {{ request()->routeIs('lease_agreements.terminations') ? 'active' : '' }}">
+                                    <i class="far fa-dot-circle nav-icon"></i><p>Lease Terminations</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('lease_agreements.handovers') }}" class="nav-link {{ request()->routeIs('lease_agreements.handovers') ? 'active' : '' }}">
+                                    <i class="far fa-dot-circle nav-icon"></i><p>Property Handover</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('lease_agreements.documents_history') }}" class="nav-link {{ request()->routeIs('lease_agreements.documents_history') ? 'active' : '' }}">
+                                    <i class="far fa-dot-circle nav-icon"></i><p>Lease Documents &amp; History</p>
+                                </a>
+                            </li>
+                        @endcan
+                    </ul>
                 </li>
 
                 @canany(['users.view', 'workflow.view', 'configuration.view'])

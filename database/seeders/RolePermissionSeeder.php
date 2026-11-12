@@ -44,6 +44,7 @@ class RolePermissionSeeder extends Seeder
             // Assets
             'land_properties',
             'lease_agreements',
+            'lease_tenant_workflow',
             'asset_register',
             'wayleaves',
             'real_estate_projects',
@@ -306,6 +307,9 @@ class RolePermissionSeeder extends Seeder
                 'dashboard.view',
                 'real_estate_projects.view',
                 'real_estate_projects.approve',
+                'lease_agreements.view',
+                'lease_tenant_workflow.view',
+                'lease_tenant_workflow.manage',
             ]);
         }
 
@@ -379,6 +383,8 @@ class RolePermissionSeeder extends Seeder
                 'real_estate_projects.export',
                 'lease_agreements.view',
                 'lease_agreements.manage',
+                'lease_tenant_workflow.view',
+                'lease_tenant_workflow.manage',
 
                 'asset_register.view',
                 'asset_register.create',

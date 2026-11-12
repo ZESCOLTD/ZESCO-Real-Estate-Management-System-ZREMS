@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Settings;
 
+use App\Notifications\EmailConnectivityTestNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Component;
 
 class NotificationPreferences extends Component
@@ -17,6 +19,8 @@ class NotificationPreferences extends Component
         'dd'        => true,
         'support'   => true,
         'gis'       => true,
+        'leases' => true,
+        'lease_approvals' => true,
     ];
 
     public array $categoryLabels = [
@@ -25,6 +29,8 @@ class NotificationPreferences extends Component
         'dd'        => 'Due diligence (approvals, sign-offs)',
         'support'   => 'Support chat',
         'gis'       => 'GIS / Geomatics events',
+        'leases' => 'Lease expiry reminders',
+        'lease_approvals' => 'Lease workflow stage updates',
     ];
 
     public function mount(): void
@@ -55,6 +61,23 @@ class NotificationPreferences extends Component
         ])->save();
 
         session()->flash('success', 'Notification preferences updated.');
+    }
+
+    public function sendTestEmail(): void
+    {
+        $user = Auth::user();
+        if (! $user || blank($user->email)) {
+            $this->addError('email_test', 'Your account does not have an email address to test.');
+            return;
+        }
+
+        Notification::route('mail', $user->email)
+            ->notify(new EmailConnectivityTestNotification());
+
+        session()->flash(
+            'email_test_sent',
+            'Test email sent using the configured ' . config('mail.default') . ' mailer.'
+        );
     }
 
     public function render()

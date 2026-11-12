@@ -279,7 +279,7 @@
                                         <thead class="bg-primary text-white">
                                         <tr>
                                             <th>Asset #</th>
-                                            <th>LAMS #</th>
+                                            <th title="Identifier retained from the legacy asset system">Legacy Asset #</th>
                                             <th>Description</th>
                                             <th>Tag</th>
                                             <th>Category</th>

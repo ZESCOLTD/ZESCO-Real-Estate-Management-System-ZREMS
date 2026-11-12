@@ -17,7 +17,7 @@ class UserCreate extends Component
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|unique:users,email',
             'password' => 'required|min:6',
-            'role_id' => 'required',
+            'role_id' => 'required|exists:roles,id',
             'mobile_no' => 'nullable',
             'man_no' => 'nullable|unique:users,man_no',
         ];
@@ -27,14 +27,14 @@ class UserCreate extends Component
     {
         $this->validate();
 
-        User::create([
+        $user = User::create([
             'name' => $this->name,
             'email' => $this->email,
             'mobile_no' => $this->mobile_no,
             'man_no' => $this->man_no,
             'password' => Hash::make($this->password),
-            'role_id' => $this->role_id,
         ]);
+        $user->syncRoles([(int) $this->role_id]);
 
         session()->flash('success', 'User created successfully.');
 

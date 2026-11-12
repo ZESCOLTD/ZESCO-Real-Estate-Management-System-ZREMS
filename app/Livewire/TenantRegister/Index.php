@@ -3,6 +3,7 @@
 namespace App\Livewire\TenantRegister;
 
 use App\Models\TenantRegister as TenantRecord;
+use App\Models\TenantOnboardingApplication;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -59,6 +60,14 @@ class Index extends Component
 
         return view('livewire.tenant-register.index', [
             'tenants' => (clone $query)->orderBy('station_location')->orderBy('category')->orderBy('physical_address')->paginate(10),
+            'pendingApplications' => TenantOnboardingApplication::query()
+                ->where('status', 'Pending Verification')
+                ->latest('submitted_at')
+                ->limit(8)
+                ->get(),
+            'pendingApplicationsCount' => TenantOnboardingApplication::query()
+                ->where('status', 'Pending Verification')
+                ->count(),
             'totalTenants' => TenantRecord::count(),
             'vacantUnits' => TenantRecord::query()->whereRaw('LOWER(TRIM(current_tenant)) = ?', ['vacant'])->count(),
             'stations' => TenantRecord::query()->whereNotNull('station_location')->distinct()->orderBy('station_location')->pluck('station_location'),

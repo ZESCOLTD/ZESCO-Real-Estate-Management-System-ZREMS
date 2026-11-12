@@ -13,9 +13,12 @@ class Index extends Component
 
     public function render()
     {
+        $this->authorize('lease_agreements.view');
+
         $search = trim($this->search);
 
         $leases = LeaseAgreement::query()
+            ->where('zesco_role', 'tenant')
             ->with(['leaseStatus', 'province', 'responsibleOfficer'])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
@@ -39,9 +42,9 @@ class Index extends Component
             ->orderByDesc('id')
             ->get();
 
-        $totalLeases = LeaseAgreement::count();
+        $totalLeases = LeaseAgreement::where('zesco_role', 'tenant')->count();
 
-        $ongoingLeases = LeaseAgreement::whereHas(
+        $ongoingLeases = LeaseAgreement::where('zesco_role', 'tenant')->whereHas(
             'leaseStatus',
             fn ($query) => $query->where('code', 'ongoing')
         )->count();
